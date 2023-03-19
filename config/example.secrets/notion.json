@@ -1,0 +1,5 @@
+{
+	"integration_tokens": {
+		"My Workspace": "my_workspace_integration_secret"
+	}
+}
