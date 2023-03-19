@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  notion_google_calendar_sync:
+    container_name: notion_google_calendar_sync
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CRON_SCHEDULE: "${CRON_SCEDULE}"
+        KUMA_PUSH_URL: "${KUMA_PUSH_URL}"
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    restart: unless-stopped

@@ -1,0 +1,17 @@
+databases:
+  - workspace: My workspace
+    name: My database
+    id: 0123abcd
+    calendar_id: 0123abcd
+    title_property: Title
+    date_property: Date
+    icon_property: Status
+    icon_property_path: Status/status/name
+    icon_default: "☑️"
+    icon_value_mapping:
+      Not started: "☑️"
+      In Progress: "▶️"
+      On Hold: "⏸️"
+      In Review: "✅"
+      Done: "✅"
+      Cancelled: "❌"
