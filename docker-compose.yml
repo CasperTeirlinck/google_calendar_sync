@@ -6,10 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        CRON_SCHEDULE: "${CRON_SCEDULE}"
-        KUMA_PUSH_URL: "${KUMA_PUSH_URL}"
     volumes:
       - ./config:/config
-      - ./logs:/logs
+    environment:
+      CRON_SCHEDULE: "${CRON_SCHEDULE}"
+      KUMA_PUSH_URL: "${KUMA_PUSH_URL}"
     restart: unless-stopped

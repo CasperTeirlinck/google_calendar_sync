@@ -6,6 +6,12 @@
   <h2 align="center">One-way sync from Notion databases to Google Calendar Events</h2>
 </p>
 
+<p align="center">
+  <img alt="Docker Image Size (tag)" src="https://img.shields.io/docker/image-size/casperteirlinck/notion_google_calendar/latest?logo=docker&style=flat-square">
+  <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/casperteirlinck/notion_google_calendar?logo=docker&
+  style=flat-square">
+</p>
+
 ## Configuration
 
 1. Obtain the necessary API tokens from [Notion](#notion-api) and [Google](#google-api)
@@ -43,6 +49,10 @@
   ```shell
   docker compose up -d
   ```
+
+  OR
+
+  Run the docker container manually, also available on [Docker Hub](https://hub.docker.com/r/casperteirlinck/notion_google_calendar)
 
 - Monitoring using logfile: \
   See logfile at `logs/logfile`
