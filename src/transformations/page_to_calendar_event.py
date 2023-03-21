@@ -22,7 +22,7 @@ def page_to_calendar_event(page: Mapping, database: Database) -> CalendarEvent:
 
     # Parse date
     page_date = None
-    for date_format in ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ"]:
+    for date_format in ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z"]:
         try:
             page_date = dt.datetime.strptime(page_date_string, date_format)
             break
@@ -32,6 +32,9 @@ def page_to_calendar_event(page: Mapping, database: Database) -> CalendarEvent:
         raise ValueError(
             f"Unrecognised date format for property {database.date_property}."
         )
+
+    # NOTE: For now, ignore timezon:
+    page_date = page_date.replace(tzinfo=None)
 
     # Create event
     return CalendarEvent(
