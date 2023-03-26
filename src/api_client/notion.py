@@ -9,7 +9,7 @@ from itertools import takewhile
 import json
 
 from models.database import Database, DatabaseName, WorkspaceName
-from models.event import CalendarEvent
+from models.event import CalendarEvent, NotionCalendarEvent
 from transformations.notion_to_calendar_event import page_to_calendar_event
 
 logger = logging.getLogger(__name__)
@@ -151,7 +151,7 @@ class Notion:
         self,
         database: Database,
         cutoff_days: int = 30,
-    ) -> List[CalendarEvent]:
+    ) -> List[NotionCalendarEvent]:
         """
         Get all pages in database that have a set date property as calendar events.
         Only events from the past "cutoff_days" nr of days are retured.
@@ -194,7 +194,9 @@ class Notion:
 
         # Limit results based on date
         def _date_cutoff(event: CalendarEvent):
-            return event.date >= dt.datetime.today() - dt.timedelta(days=cutoff_days)
+            return event.date.start >= dt.datetime.today().replace(
+                tzinfo=dt.timezone.utc
+            ) - dt.timedelta(days=cutoff_days)
 
         events = list(takewhile(_date_cutoff, events))
 

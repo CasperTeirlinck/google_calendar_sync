@@ -1,7 +1,7 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Type, Union
 
 import pytz
-from models.event import CalendarEvent, ICalCalendarEvent
+from models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEvent
 import datetime as dt
 
 
@@ -31,9 +31,9 @@ def get_events_by_ical_uid(
     return [event for event in events if event.ical_uid == ical_uid]
 
 
-def are_events_equivalent(
-    event_notion: CalendarEvent,
-    event_google: CalendarEvent,
+def are_events_equivalent_notion(
+    event_notion: NotionCalendarEvent,
+    event_google: NotionCalendarEvent,
 ) -> bool:
     """
     Assert if two events are functionally equivalent between notion and google calendar
@@ -124,10 +124,10 @@ def get_recurring_exceptions_ical(
     return events_exceptions
 
 
-def map_events(
-    events_notion: List[CalendarEvent],
-    events_google: List[CalendarEvent],
-) -> List[Tuple[CalendarEvent, CalendarEvent]]:
+def map_events_notion(
+    events_notion: List[NotionCalendarEvent],
+    events_google: List[NotionCalendarEvent],
+) -> List[Tuple[NotionCalendarEvent, NotionCalendarEvent]]:
     """
     Map events from Notion to events from Google Calendar.
     Based on the notion page id.
@@ -226,7 +226,7 @@ def get_timezone_name(date: Union[dt.date, dt.datetime]) -> str:
     return "UTC"
 
 
-def is_older_than(event: CalendarEvent, cutoff_days: int = 5) -> bool:
+def is_older_than(event: Type[CalendarEvent], cutoff_days: int = 5) -> bool:
     """
     See if the given event is older that the cutoff
     """

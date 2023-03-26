@@ -2,47 +2,60 @@ from typing import Mapping
 import datetime as dt
 
 from models.database import Database
-from models.event import CalendarEvent
+from models.event import CalendarEventDate, NotionCalendarEvent
 
 
-def page_to_calendar_event(page: Mapping, database: Database) -> CalendarEvent:
+def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarEvent:
     """
     Parse json config of a notion page to a calendar event.
     """
 
     # Get page data
-    page_id = page["id"]
-    page_url = page["url"]
-    page_title = page["properties"][database.title_property]["title"][0]["plain_text"]
-    page_date_string = page["properties"][database.date_property]["date"]["start"]
+    id = page["id"]
+    url = page["url"]
+    title = page["properties"][database.title_property]["title"][0]["plain_text"]
+    date_start_string = page["properties"][database.date_property]["date"]["start"]
+    date_end_string = page["properties"][database.date_property]["date"]["end"]
 
     icon_property_value = page["properties"][database.icon_property]
     for _ in database.icon_property_path.split("/")[1:]:
         icon_property_value = icon_property_value[_]
 
     # Parse date
-    page_date = None
-    for date_format in ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z"]:
-        try:
-            page_date = dt.datetime.strptime(page_date_string, date_format)
-            break
-        except ValueError:
+    date = {
+        "start": None,
+        "end": None,
+        "all_day": True,
+    }
+    for date_string, date_name in zip(
+        [date_start_string, date_end_string],
+        date.keys(),
+    ):
+        if not date_string:
             continue
-    if not page_date:
-        raise ValueError(
-            f"Unrecognised date format for property {database.date_property}."
-        )
-
-    # NOTE: For now, ignore timezone:
-    # TODO fix
-    page_date = page_date.replace(tzinfo=None)
+        for date_format, all_day in zip(
+            ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z"],
+            [True, False, False],
+        ):
+            try:
+                date[date_name] = dt.datetime.strptime(date_string, date_format)
+                date["all_day"] = all_day
+                if all_day:
+                    date[date_name] = date[date_name].date()
+                break
+            except ValueError:
+                continue
+        if not date[date_name]:
+            raise ValueError(
+                f"Unrecognised date format for property {database.date_property}."
+            )
 
     # Create event
-    return CalendarEvent(
+    return NotionCalendarEvent(
         database=database,
-        title=page_title,
-        date=page_date,
-        notion_page_id=page_id,
-        notion_page_url=page_url,
+        title=title,
+        date=CalendarEventDate(**date),
+        notion_page_id=id,
+        notion_page_url=url,
         icon_property_value=icon_property_value,
     )

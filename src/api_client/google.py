@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 import datetime as dt
 import logging
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Type
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -10,11 +10,11 @@ from googleapiclient.discovery import build
 from common.utils import get_timezone_name
 
 from models.database import Database
-from models.event import CalendarEvent, ICalCalendarEvent
+from models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEvent
 from models.ical import ICalendar
 from transformations.event_title import format_event_title
 from transformations.google_to_calendar_event import (
-    event_to_calendar_event,
+    event_to_notion_calendar_event,
     google_to_ical_calendar_event,
 )
 
@@ -43,11 +43,11 @@ class GCalendar:
         # Google calendar api service
         self.calendar = build("calendar", "v3", credentials=self.credentials)
 
-    def get_events(
+    def get_events_notion(
         self,
         database: Database,
         cutoff_days: int = 30,
-    ) -> List[CalendarEvent]:
+    ) -> List[NotionCalendarEvent]:
         """
         Get all events in google calendar corresponsing to the given database.
         Only events from the past "cutoff_days" nr of days are retured.
@@ -60,7 +60,7 @@ class GCalendar:
         request = self.calendar.events().list(
             calendarId=database.calendar_id,
             sharedExtendedProperty=[
-                f"{CalendarEvent.notion_database_id_property_name}={database.id}",
+                f"{NotionCalendarEvent.notion_database_id_property_name}={database.id}",
             ],
             timeMin=time_min.isoformat() + "Z",
             orderBy="startTime",
@@ -77,7 +77,9 @@ class GCalendar:
         events = list(
             filter(
                 lambda _: _ is not None,
-                map(partial(event_to_calendar_event, database=database), response),
+                map(
+                    partial(event_to_notion_calendar_event, database=database), response
+                ),
             )
         )
 
@@ -156,7 +158,7 @@ class GCalendar:
 
         return events
 
-    def create_event(self, event: CalendarEvent) -> None:
+    def create_event_from_notion(self, event: NotionCalendarEvent) -> None:
         """
         Create a new event in Google Calendar.
         """
@@ -164,7 +166,7 @@ class GCalendar:
         # Create request
         request = self.calendar.events().insert(
             calendarId=event.database.calendar_id,
-            body=self.event_to_request_body(event),
+            body=self.event_to_request_body_notion(event),
         )
 
         # Send request
@@ -191,7 +193,7 @@ class GCalendar:
 
         return event_id
 
-    def update_event(self, event: CalendarEvent) -> None:
+    def update_event_from_notion(self, event: NotionCalendarEvent) -> None:
         """
         Update the given event in Google Calendar.
         """
@@ -200,7 +202,7 @@ class GCalendar:
         request = self.calendar.events().update(
             calendarId=event.database.calendar_id,
             eventId=event.google_event_id,
-            body=self.event_to_request_body(event),
+            body=self.event_to_request_body_notion(event),
         )
 
         # Send request
@@ -225,7 +227,7 @@ class GCalendar:
 
         logger.info(f"Updating event '{event.title}' in Google Calendar.")
 
-    def delete_event(self, event: CalendarEvent) -> None:
+    def delete_event_notion(self, event: NotionCalendarEvent) -> None:
         """
         Delete the given event from Google Calendar.
         """
@@ -257,43 +259,12 @@ class GCalendar:
 
         logger.info(f"Deleted event '{event.title}' from Google Calendar.")
 
-    def event_to_request_body(self, event: CalendarEvent) -> Mapping[str, Any]:
+    def event_to_request_body(self, event: Type[CalendarEvent]) -> Mapping[str, Any]:
         """
         Parse calendar event object to json body for api requests.
         """
 
         return {
-            "source": {
-                "title": event.title,
-                "url": event.notion_page_url,
-            },
-            "summary": format_event_title(event),
-            "description": f"<a href='{event.notion_page_url}'>Notion</a>",
-            "start": {
-                "date": event.date.strftime("%Y-%m-%d"),
-            },
-            "end": {
-                "date": (event.date + dt.timedelta(days=1)).strftime("%Y-%m-%d"),
-            },
-            "extendedProperties": {
-                "shared": {
-                    CalendarEvent.notion_database_id_property_name: event.database.id,
-                    CalendarEvent.notion_page_id_property_name: event.notion_page_id,
-                    CalendarEvent.notion_title_property_name: event.title,
-                    CalendarEvent.notion_icon_property_value_property_name: event.icon_property_value,
-                }
-            },
-        }
-
-    def event_to_request_body_ical(self, event: ICalCalendarEvent) -> Mapping[str, Any]:
-        """
-        Parse ical calendar event object to json body for api requests.
-        """
-
-        return {
-            "summary": event.title,
-            "location": event.location,
-            "status": event.status,
             "start": {
                 "date": event.date.start.strftime("%Y-%m-%d")
                 if event.date.all_day
@@ -312,6 +283,43 @@ class GCalendar:
                 else None,
                 "timeZone": get_timezone_name(event.date.end),
             },
+        }
+
+    def event_to_request_body_notion(
+        self, event: NotionCalendarEvent
+    ) -> Mapping[str, Any]:
+        """
+        Parse calendar event object to json body for api requests.
+        """
+
+        return {
+            **self.event_to_request_body(event),
+            "summary": format_event_title(event),
+            "description": f"<a href='{event.notion_page_url}'>Notion</a>",
+            "source": {
+                "title": event.title,
+                "url": event.notion_page_url,
+            },
+            "extendedProperties": {
+                "shared": {
+                    NotionCalendarEvent.notion_database_id_property_name: event.database.id,
+                    NotionCalendarEvent.notion_page_id_property_name: event.notion_page_id,
+                    NotionCalendarEvent.notion_title_property_name: event.title,
+                    NotionCalendarEvent.notion_icon_property_value_property_name: event.icon_property_value,
+                }
+            },
+        }
+
+    def event_to_request_body_ical(self, event: ICalCalendarEvent) -> Mapping[str, Any]:
+        """
+        Parse ical calendar event object to json body for api requests.
+        """
+
+        return {
+            **self.event_to_request_body(event),
+            "summary": event.title,
+            "location": event.location,
+            "status": event.status,
             **({"recurrence": [event.recurrence]} if event.recurrence else {}),
             **(
                 {"recurringEventId": event.recurrence_id} if event.recurrence_id else {}

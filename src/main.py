@@ -29,15 +29,13 @@ def main(push_url: Optional[str] = None):
     notion = Notion()
     ical = ICal()
 
-    # Sync all icalendars
-    for icalendar in config.icals:
-        sync_icalendar(ical, gcalendar, icalendar)
-
-    return
-
     # Sync all notion databases
     for database in config.databases:
         sync_database(notion, gcalendar, database)
+
+    # Sync all icalendars
+    for icalendar in config.icals:
+        sync_icalendar(ical, gcalendar, icalendar)
 
     # Ping monitoring url
     if push_url:
