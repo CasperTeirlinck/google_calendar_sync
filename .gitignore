@@ -2,5 +2,6 @@ __pycache__
 .venv
 .env
 logs
-secrets**
-config.yaml
+config/*
+!config/example.config.yaml
+!config/example.secrets

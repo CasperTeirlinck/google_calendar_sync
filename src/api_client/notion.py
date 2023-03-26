@@ -10,7 +10,7 @@ import json
 
 from models.database import Database, DatabaseName, WorkspaceName
 from models.event import CalendarEvent
-from transformations.page_to_calendar_event import page_to_calendar_event
+from transformations.notion_to_calendar_event import page_to_calendar_event
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +156,8 @@ class Notion:
         Get all pages in database that have a set date property as calendar events.
         Only events from the past "cutoff_days" nr of days are retured.
         """
+
+        logger.info("Getting all pages from Notion.")
 
         # Get database property ids
         database_object = self.get_database(database)

@@ -22,7 +22,8 @@
 > OAuth for google doesn't seem to work in Brave browser, use Google Chrome instead.
 
 1. [Create the credentials](https://developers.google.com/calendar/api/quickstart/python.)
-   - scope: "/auth/calendar"
+   - First, make sure the google calendar and google tasks api's form the api library are enabled
+   - Scopes: "/auth/calendar", "/auth/tasks"
 2. Store `credentials.json` in `secrets/credentials.json`.
 
 ## Notion API
@@ -63,3 +64,9 @@
   `http://<kuma_container_name>:3001/api/...` \
   Make sure the cron schedule and hearthbeat interval in uptime kuma match. \
   Make sure to add the running container to a shared docker network with the Uptime Kuma container.
+
+## Also sync work outlook calendars:
+
+Because the subscribing to an outlook calendar from google calendar sucks \*ss with very slow syncing times, you can include an outlook calendar in this syncing tool.
+
+<!-- If you want to share a work calendar, first share it with your personal microsoft account so you still can setup personal API credentials. -->

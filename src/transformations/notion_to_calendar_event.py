@@ -33,7 +33,8 @@ def page_to_calendar_event(page: Mapping, database: Database) -> CalendarEvent:
             f"Unrecognised date format for property {database.date_property}."
         )
 
-    # NOTE: For now, ignore timezon:
+    # NOTE: For now, ignore timezone:
+    # TODO fix
     page_date = page_date.replace(tzinfo=None)
 
     # Create event
