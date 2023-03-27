@@ -8,8 +8,6 @@
 
 <p align="center">
   <img alt="Docker Image Size (tag)" src="https://img.shields.io/docker/image-size/casperteirlinck/notion_google_calendar/latest?logo=docker&style=flat-square">
-  <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/casperteirlinck/notion_google_calendar?logo=docker&
-  style=flat-square">
 </p>
 
 ## Configuration
