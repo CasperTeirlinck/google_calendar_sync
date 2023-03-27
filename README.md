@@ -43,9 +43,9 @@
 
 3. Add the integration to each database in Notion.
 
-## ICal:
+## ICal
 
-Because the subscribing to an ical feed like an outlook calendar from google calendar sucks, with very slow syncing times, you can include an ical link in this syncing tool.
+Because subscribing to an ical feed like an outlook calendar from google calendar sucks, with very slow syncing times, you can include an ical link in this syncing tool.
 
 Recurring events are supported, apart from detecting deleted recurring instances on the side of Google Calendar. Make sure to create a new calendar in google for the ical feed and to not edit the events manually.
 
