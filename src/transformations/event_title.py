@@ -1,7 +1,7 @@
-from models.event import CalendarEvent
+from models.event import NotionCalendarEvent
 
 
-def format_event_title(event: CalendarEvent) -> str:
+def format_event_title(event: NotionCalendarEvent) -> str:
     """
     Format plain Notion page title to indicate database or page properties.
     """

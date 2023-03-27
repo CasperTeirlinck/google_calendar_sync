@@ -4,13 +4,13 @@ import logging
 from models.ical import ICalendar
 from api_client.google import GCalendar
 from api_client.ical import ICal
-from common.utils import (
-    are_events_equivalent_ical,
-    get_recurring_exceptions_ical,
-    get_recurring_root_ical,
-    is_older_than,
-    map_events_ical,
-    map_exceptions_ical,
+from common.utils import is_older_than
+from common.ical import (
+    are_events_equivalent,
+    get_recurring_exceptions,
+    get_recurring_root,
+    map_events,
+    map_exceptions,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,17 +30,15 @@ def sync_icalendar(ical: ICal, gcalendar: GCalendar, icalendar: ICalendar):
     events_google = gcalendar.get_events_ical(icalendar, cutoff_days=1000)
 
     # Map events from ICal to events from Google Calendar
-    events_map = map_events_ical(events_ical, events_google)
+    events_map = map_events(events_ical, events_google)
 
     # Create/Update/Delete events
     for events_ical, events_google in events_map:
         # Get root events & recurring exceptions
-        event_root_ical = get_recurring_root_ical(events_ical)
-        event_exceptions_ical = get_recurring_exceptions_ical(
-            events_ical, event_root_ical
-        )
-        event_root_google = get_recurring_root_ical(events_google)
-        event_exceptions_google = get_recurring_exceptions_ical(
+        event_root_ical = get_recurring_root(events_ical)
+        event_exceptions_ical = get_recurring_exceptions(events_ical, event_root_ical)
+        event_root_google = get_recurring_root(events_google)
+        event_exceptions_google = get_recurring_exceptions(
             events_google, event_root_google
         )
 
@@ -56,7 +54,7 @@ def sync_icalendar(ical: ICal, gcalendar: GCalendar, icalendar: ICalendar):
 
         # Update root event
         if event_root_ical and event_root_google:
-            if not are_events_equivalent_ical(event_root_ical, event_root_google):
+            if not are_events_equivalent(event_root_ical, event_root_google):
                 event_root_ical.google_event_id = event_root_google.google_event_id
                 gcalendar.update_event_from_ical(event_root_ical)
 
@@ -65,7 +63,7 @@ def sync_icalendar(ical: ICal, gcalendar: GCalendar, icalendar: ICalendar):
             gcalendar.delete_event_ical(event_root_google)
 
         # Create/Reset recurring exceptions
-        events_map_exceptions = map_exceptions_ical(
+        events_map_exceptions = map_exceptions(
             event_exceptions_ical, event_exceptions_google
         )
         event_instances_google = []

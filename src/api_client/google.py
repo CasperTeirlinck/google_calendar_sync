@@ -2,19 +2,18 @@ from functools import partial
 from pathlib import Path
 import datetime as dt
 import logging
-from typing import Any, List, Mapping, Optional, Type
+from typing import Any, List, Mapping, Type
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from common.utils import get_timezone_name
 
 from models.database import Database
 from models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEvent
 from models.ical import ICalendar
 from transformations.event_title import format_event_title
 from transformations.google_to_calendar_event import (
-    event_to_notion_calendar_event,
+    google_to_notion_calendar_event,
     google_to_ical_calendar_event,
 )
 
@@ -78,7 +77,8 @@ class GCalendar:
             filter(
                 lambda _: _ is not None,
                 map(
-                    partial(event_to_notion_calendar_event, database=database), response
+                    partial(google_to_notion_calendar_event, database=database),
+                    response,
                 ),
             )
         )

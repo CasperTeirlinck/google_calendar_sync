@@ -3,7 +3,7 @@ import datetime as dt
 
 from api_client.google import GCalendar
 from api_client.notion import Notion
-from common.utils import are_events_equivalent_notion, map_events_notion
+from common.notion import are_events_equivalent, map_events
 from models.database import Database
 
 logger = logging.getLogger(__name__)
@@ -21,14 +21,14 @@ def sync_database(notion: Notion, gcalendar: GCalendar, database: Database) -> N
     events_google = gcalendar.get_events_notion(database)
 
     # Map events from Notion to events from Google Calendar
-    events = map_events_notion(events_notion, events_google)
+    events = map_events(events_notion, events_google)
 
     # Create/Update/Delete events
     for event_notion, event_google in events:
         # Update event
         if event_notion and event_google:
             # Check if update is needed
-            if are_events_equivalent_notion(event_notion, event_google):
+            if are_events_equivalent(event_notion, event_google):
                 continue
 
             event_notion.google_event_id = event_google.google_event_id

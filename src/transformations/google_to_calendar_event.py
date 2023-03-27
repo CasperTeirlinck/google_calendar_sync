@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 
 from models.database import Database
 from models.event import (
-    CalendarEvent,
     CalendarEventDate,
     ICalCalendarEvent,
     NotionCalendarEvent,
@@ -70,7 +69,7 @@ def parse_event(event: Mapping) -> EventData:
     return EventData(id=id, title=title, location=location, date=date)
 
 
-def event_to_notion_calendar_event(
+def google_to_notion_calendar_event(
     event: Mapping, database: Database
 ) -> NotionCalendarEvent | None:
     """

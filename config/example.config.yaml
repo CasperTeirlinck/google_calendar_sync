@@ -14,3 +14,8 @@ databases:
       In Review: "✅"
       Done: "✅"
       Cancelled: "❌"
+
+icals:
+  - name: My other calendar
+    url: https://myothercalendar.ics
+    calendar_id: 0123abcd

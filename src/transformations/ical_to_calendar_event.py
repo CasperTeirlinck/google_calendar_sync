@@ -1,4 +1,4 @@
-from typing import Mapping, Optional, Union
+from typing import Optional, Union
 import datetime as dt
 import logging
 import icalendar as ical

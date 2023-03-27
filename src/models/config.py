@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Any, List, Mapping
-from zoneinfo import ZoneInfo
 
 from models.database import Database
 from models.ical import ICalendar
