@@ -2,8 +2,8 @@
   <picture>
     <img src="https://github.com/CasperTeirlinck/notion_google_calendar/blob/main/logo.png?raw=true" height="128">
   </picture>
-  <h1 align="center">Notion → Google Calendar</h1>
-  <h2 align="center">One-way sync from Notion databases to Google Calendar Events</h2>
+  <h1 align="center">Notion → Google Calendar ← ICal</h1>
+  <h2 align="center">Sync from Notion databases and ICal feeds to Google Calendar</h2>
 </p>
 
 <p align="center">
@@ -14,8 +14,11 @@
 
 ## Configuration
 
+> See `config/example.config.yaml` for all available configuration options.
+
 1. Obtain the necessary API tokens from [Notion](#notion-api) and [Google](#google-api)
-2. Configure each Notion database and how its properties map to Google Calendar events in `config/config.yaml`. See `config/example.config.yaml` for all available configuration options.
+2. Configure each Notion database and how its properties map to Google Calendar events in `config/config.yaml`.
+3. Configure each [ICal](#ical) feed in `config/config.yaml`.
 
 ## Google API
 
@@ -42,6 +45,12 @@
 
 3. Add the integration to each database in Notion.
 
+## ICal:
+
+Because the subscribing to an ical feed like an outlook calendar from google calendar sucks, with very slow syncing times, you can include an ical link in this syncing tool.
+
+Recurring events are supported, apart from detecting deleted recurring instances on the side of Google Calendar. Make sure to create a new calendar in google for the ical feed and to not edit the events manually.
+
 ## Scheduling & Monitoring
 
 - Scheduling using Cron in a Docker container: \
@@ -64,9 +73,3 @@
   `http://<kuma_container_name>:3001/api/...` \
   Make sure the cron schedule and hearthbeat interval in uptime kuma match. \
   Make sure to add the running container to a shared docker network with the Uptime Kuma container.
-
-## Also sync work outlook calendars:
-
-Because the subscribing to an outlook calendar from google calendar sucks \*ss with very slow syncing times, you can include an outlook calendar in this syncing tool.
-
-<!-- If you want to share a work calendar, first share it with your personal microsoft account so you still can setup personal API credentials. -->
