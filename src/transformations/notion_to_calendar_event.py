@@ -25,7 +25,6 @@ def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarE
     date = {
         "start": None,
         "end": None,
-        "all_day": True,
     }
     for date_string, date_name in zip(
         [date_start_string, date_end_string],
@@ -39,7 +38,6 @@ def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarE
         ):
             try:
                 date[date_name] = dt.datetime.strptime(date_string, date_format)
-                date["all_day"] = all_day
                 if all_day:
                     date[date_name] = date[date_name].date()
                 break

@@ -29,11 +29,7 @@ def ical_to_calendar_event(
     event_rrule = None
 
     # Parse date
-    event_date = None
-    if isinstance(event_start, dt.date):
-        event_date = CalendarEventDate(start=event_start, end=event_end, all_day=True)
-    if isinstance(event_start, dt.datetime):
-        event_date = CalendarEventDate(start=event_start, end=event_end, all_day=False)
+    event_date = CalendarEventDate(start=event_start, end=event_end)
 
     # Parse recurrence
     if ical_rrule:

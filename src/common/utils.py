@@ -210,20 +210,17 @@ def map_exceptions_ical(
     return events
 
 
-def get_timezone_name(date: Union[dt.date, dt.datetime]) -> str:
+def get_timezone_name(date: dt.datetime) -> str:
     """
-    Return IANA timezone name from date or datetime object.
+    Return IANA timezone name from the datetime object.
     """
 
-    try:
-        return date.tzinfo.zone
-    except:
-        pass
-    try:
-        return pytz.timezone(date.tzname()).zone
-    except:
-        pass
-    return "UTC"
+    matching_timezones = [
+        tz
+        for tz in pytz.common_timezones
+        if dt.datetime.now(pytz.timezone(tz)).utcoffset() == date.utcoffset()
+    ]
+    return matching_timezones[0]
 
 
 def is_older_than(event: Type[CalendarEvent], cutoff_days: int = 5) -> bool:

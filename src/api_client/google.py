@@ -272,7 +272,7 @@ class GCalendar:
                 "dateTime": event.date.start.strftime("%Y-%m-%dT%H:%M:%S%z")
                 if not event.date.all_day
                 else None,
-                "timeZone": get_timezone_name(event.date.start),
+                # "timeZone": get_timezone_name(event.date.start),
             },
             "end": {
                 "date": event.date.end.strftime("%Y-%m-%d")
@@ -281,7 +281,7 @@ class GCalendar:
                 "dateTime": event.date.end.strftime("%Y-%m-%dT%H:%M:%S%z")
                 if not event.date.all_day
                 else None,
-                "timeZone": get_timezone_name(event.date.end),
+                # "timeZone": get_timezone_name(event.date.end),
             },
         }
 
@@ -328,16 +328,14 @@ class GCalendar:
                 {
                     "originalStartTime": {
                         "date": event.recurrence_start.strftime("%Y-%m-%d")
-                        if event.date.all_day and event.recurrence_start
+                        if event.date.all_day
                         else None,
                         "dateTime": event.recurrence_start.strftime(
                             "%Y-%m-%dT%H:%M:%S%z"
                         )
-                        if not event.date.all_day and event.recurrence_start
+                        if not event.date.all_day
                         else None,
-                        "timeZone": get_timezone_name(event.recurrence_start)
-                        if event.recurrence_start
-                        else None,
+                        # "timeZone": get_timezone_name(event.recurrence_start)
                     }
                 }
                 if event.recurrence_start

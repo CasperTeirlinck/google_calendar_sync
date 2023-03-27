@@ -47,7 +47,6 @@ def parse_event(event: Mapping) -> EventData:
             date = CalendarEventDate(
                 dt.datetime.strptime(date_start, "%Y-%m-%d").date(),
                 dt.datetime.strptime(date_end, "%Y-%m-%d").date(),
-                all_day=True,
             )
         except ValueError:
             pass
@@ -58,7 +57,6 @@ def parse_event(event: Mapping) -> EventData:
             date = CalendarEventDate(
                 dt.datetime.strptime(time_start, "%Y-%m-%dT%H:%M:%S%z"),
                 dt.datetime.strptime(time_end, "%Y-%m-%dT%H:%M:%S%z"),
-                all_day=False,
             )
         except ValueError:
             pass
@@ -68,12 +66,6 @@ def parse_event(event: Mapping) -> EventData:
             "An event from google calendar does not have the expected date format."
         )
         return None
-
-    # Timezones
-    if tz_start:
-        date.start = date.start.replace(tzinfo=ZoneInfo(tz_start))
-    if tz_end:
-        date.end = date.end.replace(tzinfo=ZoneInfo(tz_end))
 
     return EventData(id=id, title=title, location=location, date=date)
 
