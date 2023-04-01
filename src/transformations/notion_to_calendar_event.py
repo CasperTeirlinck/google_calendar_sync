@@ -1,5 +1,5 @@
 from typing import Mapping
-import datetime as dt
+import pendulum as dt
 
 from models.database import Database
 from models.event import CalendarEventDate, NotionCalendarEvent
@@ -25,6 +25,7 @@ def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarE
     date = {
         "start": None,
         "end": None,
+        "all_day": True,
     }
     for date_string, date_name in zip(
         [date_start_string, date_end_string],
@@ -33,13 +34,12 @@ def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarE
         if not date_string:
             continue
         for date_format, all_day in zip(
-            ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z"],
+            ["YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ssZ", "YYYY-MM-DDTHH:mm:ss.SSSZ"],
             [True, False, False],
         ):
             try:
-                date[date_name] = dt.datetime.strptime(date_string, date_format)
-                if all_day:
-                    date[date_name] = date[date_name].date()
+                date[date_name] = dt.from_format(date_string, date_format)
+                date["all_day"] = all_day
                 break
             except ValueError:
                 continue

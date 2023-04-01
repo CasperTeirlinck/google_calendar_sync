@@ -1,9 +1,10 @@
 from functools import partial
 from pathlib import Path
-import datetime as dt
+import pendulum as dt
 import logging
 from typing import Any, List, Mapping, Type
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -55,13 +56,12 @@ class GCalendar:
         logger.info("Getting all events from Google Calendar.")
 
         # Create request
-        time_min = dt.datetime.today() - dt.timedelta(days=cutoff_days)
         request = self.calendar.events().list(
             calendarId=database.calendar_id,
             sharedExtendedProperty=[
                 f"{NotionCalendarEvent.notion_database_id_property_name}={database.id}",
             ],
-            timeMin=time_min.isoformat() + "Z",
+            timeMin=dt.now().naive().subtract(days=cutoff_days).isoformat() + "Z",
             orderBy="startTime",
             singleEvents=True,
             maxResults=2500,
@@ -97,11 +97,10 @@ class GCalendar:
         logger.info("Getting all events from Google Calendar.")
 
         # Create request
-        time_min = dt.datetime.today() - dt.timedelta(days=cutoff_days)
         request = self.calendar.events().list(
             calendarId=icalendar.calendar_id,
-            timeMin=time_min.isoformat()
-            + "Z",  # NOTE: recurring root events seem to be retrieved regardless of timeMin, that is what we want.
+            # NOTE: recurring root events seem to be retrieved regardless of timeMin, that is what we want.
+            timeMin=dt.now().naive().subtract(days=cutoff_days).isoformat() + "Z",
             singleEvents=False,
             maxResults=2500,
         )
@@ -266,22 +265,24 @@ class GCalendar:
 
         return {
             "start": {
-                "date": event.date.start.strftime("%Y-%m-%d")
+                "date": event.date.start.format("YYYY-MM-DD")
                 if event.date.all_day
                 else None,
-                "dateTime": event.date.start.strftime("%Y-%m-%dT%H:%M:%S%z")
+                "dateTime": event.date.start.format("YYYY-MM-DDTHH:mm:ssZ")
                 if not event.date.all_day
                 else None,
-                # "timeZone": get_timezone_name(event.date.start),
+                "timeZone": event.date.start.timezone_name
+                if event.recurrence
+                else None,
             },
             "end": {
-                "date": event.date.end.strftime("%Y-%m-%d")
+                "date": event.date.end.format("YYYY-MM-DD")
                 if event.date.all_day
                 else None,
-                "dateTime": event.date.end.strftime("%Y-%m-%dT%H:%M:%S%z")
+                "dateTime": event.date.end.format("YYYY-MM-DDTHH:mm:ssZ")
                 if not event.date.all_day
                 else None,
-                # "timeZone": get_timezone_name(event.date.end),
+                "timeZone": event.date.end.timezone_name if event.recurrence else None,
             },
         }
 
@@ -327,15 +328,15 @@ class GCalendar:
             **(
                 {
                     "originalStartTime": {
-                        "date": event.recurrence_start.strftime("%Y-%m-%d")
+                        "date": event.recurrence_start.format("YYYY-MM-DD")
                         if event.date.all_day
                         else None,
-                        "dateTime": event.recurrence_start.strftime(
-                            "%Y-%m-%dT%H:%M:%S%z"
+                        "dateTime": event.recurrence_start.format(
+                            "YYYY-MM-DDTHH:mm:ssZ"
                         )
                         if not event.date.all_day
                         else None,
-                        # "timeZone": get_timezone_name(event.recurrence_start)
+                        "timeZone": event.recurrence_start.timezone_name,
                     }
                 }
                 if event.recurrence_start
@@ -374,16 +375,24 @@ class GCalendar:
 
         # Get new credentials
         if not creds or not creds.valid:
+            refreshed = False
+
             # Refresh credentials
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+                try:
+                    creds.refresh(Request())
+                    refreshed = True
+                except RefreshError:
+                    pass
 
             # Recreate credentials
-            else:
+            if not refreshed:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     credentials_path, SCOPES
                 )
-                creds = flow.run_local_server(port=0)
+                creds = flow.run_local_server(port=3000)
+
+            # Write new credentials to file
             with open(token_path, "w") as token:
                 token.write(creds.to_json())
 

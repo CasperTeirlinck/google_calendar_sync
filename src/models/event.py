@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-import datetime as dt
-from typing import Literal, Optional, Union
+import pendulum as dt
+from typing import Literal, Optional
 
 from models.database import Database
 from models.ical import ICalendar
@@ -10,46 +10,19 @@ DEFAULT_EVENT_DURATION_MIN = 30
 
 @dataclass
 class CalendarEventDate:
-    start: Union[dt.date, dt.datetime]
-    end: Optional[Union[dt.date, dt.datetime]] = None
+    start: dt.DateTime
+    end: Optional[dt.DateTime] = None
 
     all_day: bool = True
 
     def __post_init__(self):
         # All day
-        if type(self.start) is dt.date:
-            self.all_day = True
-
-            if not self.end:
-                self.end = self.start + dt.timedelta(days=1)
-
-            # Timezone
-            tz = dt.timezone.utc
-            self.start = dt.datetime.combine(
-                self.start, dt.datetime.min.time(), tzinfo=tz
-            )
-            self.end = dt.datetime.combine(self.end, dt.datetime.min.time(), tzinfo=tz)
+        if self.all_day and not self.end:
+            self.end = self.start.add(days=1)
 
         # Timed
-        elif type(self.start) is dt.datetime:
-            self.all_day = False
-
-            if not self.end:
-                self.end = self.start + dt.timedelta(minutes=DEFAULT_EVENT_DURATION_MIN)
-
-            # Timezone
-            tz_start = (
-                dt.timezone(self.start.utcoffset())
-                if self.start.utcoffset()
-                else dt.timezone(dt.timedelta())
-            )
-            tz_end = (
-                dt.timezone(self.end.utcoffset())
-                if self.end.utcoffset()
-                else dt.timezone(dt.timedelta())
-            )
-            self.start = self.start.astimezone(tz_start)
-            self.end = self.end.astimezone(tz_end)
+        elif not self.all_day and not self.end:
+            self.end = self.start.add(minutes=DEFAULT_EVENT_DURATION_MIN)
 
 
 @dataclass
@@ -57,7 +30,7 @@ class CalendarEvent:
     title: str
     date: CalendarEventDate
     recurrence: Optional[str] = None
-    recurrence_start: Optional[Union[dt.date, dt.datetime]] = None
+    recurrence_start: Optional[dt.DateTime] = None
     recurrence_id: Optional[str] = None
     google_event_id: str = ""
 

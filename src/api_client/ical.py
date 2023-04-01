@@ -2,8 +2,9 @@ from functools import partial
 import logging
 from typing import List
 import icalendar as ical
-import datetime as dt
+import pendulum as dt
 import requests
+from common.utils import to_datetime
 
 from models.event import ICalCalendarEvent
 from models.ical import ICalendar
@@ -46,13 +47,8 @@ class ICal:
                 event = ical.Event.from_ical(item.to_ical())
 
                 # Filter on date
-                date = event.get("DTSTART").dt
-                if type(date) is dt.date:
-                    now = dt.date.today()
-                if type(date) is dt.datetime:
-                    now = dt.datetime.today().replace(tzinfo=dt.timezone.utc)
-                time_min = now - dt.timedelta(days=cutoff_days)
-
+                date = to_datetime(event.get("DTSTART").dt)
+                time_min = dt.now().subtract(days=cutoff_days)
                 if date < time_min and not event.get("RRULE"):
                     continue
 

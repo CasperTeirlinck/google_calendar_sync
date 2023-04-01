@@ -1,9 +1,9 @@
 import logging
-import datetime as dt
 
 from api_client.google import GCalendar
 from api_client.notion import Notion
 from common.notion import are_events_equivalent, map_events
+from common.utils import is_older_than
 from models.database import Database
 
 logger = logging.getLogger(__name__)
@@ -37,9 +37,7 @@ def sync_database(notion: Notion, gcalendar: GCalendar, database: Database) -> N
         # Add event
         if event_notion and not event_google:
             # Dont create new events that are older that 5 days
-            if event_notion.date.start < dt.datetime.now().replace(
-                tzinfo=dt.timezone.utc
-            ) - dt.timedelta(days=5):
+            if is_older_than(event_notion):
                 continue
 
             gcalendar.create_event_from_notion(event_notion)

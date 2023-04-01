@@ -27,7 +27,7 @@ def sync_icalendar(ical: ICal, gcalendar: GCalendar, icalendar: ICalendar):
 
     # Get events from ICal and Google Calendar
     events_ical = ical.get_events(icalendar)
-    events_google = gcalendar.get_events_ical(icalendar, cutoff_days=1000)
+    events_google = gcalendar.get_events_ical(icalendar)
 
     # Map events from ICal to events from Google Calendar
     events_map = map_events(events_ical, events_google)

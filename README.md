@@ -60,7 +60,7 @@ Recurring events are supported, apart from detecting deleted recurring instances
 
   OR
 
-  Run the docker container manually, also available on [Docker Hub](https://hub.docker.com/r/casperteirlinck/notion_google_calendar)
+  Run the docker container manually, also available on [Docker Hub](https://hub.docker.com/r/casperteirlinck/google_calendar_sync)
 
 - Monitoring using logfile: \
   See logfile at `logs/logfile`

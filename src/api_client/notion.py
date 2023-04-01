@@ -3,7 +3,7 @@ from typing import Any, Iterator, List, Mapping, Optional
 import urllib.parse
 import requests
 from functools import partial
-import datetime as dt
+import pendulum as dt
 import logging
 from itertools import takewhile
 import json
@@ -194,9 +194,7 @@ class Notion:
 
         # Limit results based on date
         def _date_cutoff(event: CalendarEvent):
-            return event.date.start >= dt.datetime.today().replace(
-                tzinfo=dt.timezone.utc
-            ) - dt.timedelta(days=cutoff_days)
+            return event.date.start >= dt.now().subtract(days=cutoff_days)
 
         events = list(takewhile(_date_cutoff, events))
 

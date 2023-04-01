@@ -1,7 +1,6 @@
 from typing import Mapping, NamedTuple, Optional
-import datetime as dt
+import pendulum as dt
 import logging
-from zoneinfo import ZoneInfo
 
 from models.database import Database
 from models.event import (
@@ -44,8 +43,9 @@ def parse_event(event: Mapping) -> EventData:
     if date_start:
         try:
             date = CalendarEventDate(
-                dt.datetime.strptime(date_start, "%Y-%m-%d").date(),
-                dt.datetime.strptime(date_end, "%Y-%m-%d").date(),
+                dt.from_format(date_start, "YYYY-MM-DD"),
+                dt.from_format(date_end, "YYYY-MM-DD"),
+                all_day=True,
             )
         except ValueError:
             pass
@@ -54,8 +54,9 @@ def parse_event(event: Mapping) -> EventData:
     if time_start:
         try:
             date = CalendarEventDate(
-                dt.datetime.strptime(time_start, "%Y-%m-%dT%H:%M:%S%z"),
-                dt.datetime.strptime(time_end, "%Y-%m-%dT%H:%M:%S%z"),
+                dt.from_format(time_start, "YYYY-MM-DDTHH:mm:ssZ"),
+                dt.from_format(time_end, "YYYY-MM-DDTHH:mm:ssZ"),
+                all_day=False,
             )
         except ValueError:
             pass
@@ -65,6 +66,12 @@ def parse_event(event: Mapping) -> EventData:
             "An event from google calendar does not have the expected date format."
         )
         return None
+
+    # Parse date: timezone
+    if tz_start:
+        date.start = date.start.set(tz=tz_start)
+    if tz_end:
+        date.end = date.end.set(tz=tz_end)
 
     return EventData(id=id, title=title, location=location, date=date)
 
@@ -149,24 +156,22 @@ def google_to_ical_calendar_event(
     recurring_start = None
     if recurring_date_start:
         try:
-            recurring_start = dt.datetime.strptime(
-                recurring_date_start, "%Y-%m-%d"
-            ).date()
+            recurring_start = dt.from_format(recurring_date_start, "YYYY-MM-DD")
         except ValueError:
             pass
 
     # Parse recurring date: timed event
     if recurring_time_start:
         try:
-            recurring_start = dt.datetime.strptime(
-                recurring_time_start, "%Y-%m-%dT%H:%M:%S%z"
+            recurring_start = dt.from_format(
+                recurring_time_start, "YYYY-MM-DDTHH:mm:ssZ"
             )
         except ValueError:
             pass
 
-    # Timezones
+    # Parse recurring date: timezone
     if recurring_tz:
-        recurring_start = recurring_start.replace(tzinfo=ZoneInfo(recurring_tz))
+        recurring_start = recurring_start.set(tz=recurring_tz)
 
     # Create event
     return ICalCalendarEvent(
