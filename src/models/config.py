@@ -12,7 +12,9 @@ class Config:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]):
+        databases = data.get("databases", [])
+        icals = data.get("icals", [])
         return cls(
-            databases=[Database.from_dict(_) for _ in data["databases"]],
-            icals=[ICalendar.from_dict(_) for _ in data["icals"]],
+            databases=[Database.from_dict(_) for _ in databases],
+            icals=[ICalendar.from_dict(_) for _ in icals],
         )
