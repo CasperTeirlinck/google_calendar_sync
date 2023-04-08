@@ -27,7 +27,7 @@ def parse_event(event: Mapping) -> EventData:
 
     # General
     id = event["id"]
-    title = event["summary"]
+    title = event.get("summary", "Untitled")
     location = event.get("location")
 
     # Dates
