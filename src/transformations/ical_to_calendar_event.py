@@ -1,5 +1,6 @@
 from typing import Optional
 import pendulum as dt
+import datetime
 import logging
 import icalendar as ical
 
@@ -24,7 +25,7 @@ def ical_to_calendar_event(
     location = str(event.get("LOCATION", ical.vText("")))
     start: dt.DateTime = to_datetime(event.get("DTSTART").dt)
     end: dt.DateTime = to_datetime(event.get("DTEND").dt)
-    all_day: bool = True if type(event.get("DTSTART").dt) is dt.date else False
+    all_day: bool = True if type(event.get("DTSTART").dt) is datetime.date else False
     ical_rrule: Optional[ical.vRecur] = event.get("RRULE")
     ical_rid: Optional[ical.vDDDTypes] = event.get("RECURRENCE-ID")
     rrule = None
@@ -38,6 +39,13 @@ def ical_to_calendar_event(
         rrule = "RRULE:" + ical_rrule
     if ical_rid:
         ical_rid: dt.DateTime = to_datetime(ical_rid.dt)
+
+    # Ignore timezone for all-day events: recurence start can mismatch with start and end times if those contain no timezone data
+    if all_day:
+        start = start.set(tz="UTC")
+        end = end.set(tz="UTC")
+        if ical_rid:
+            ical_rid = ical_rid.set(tz="UTC")
 
     # Parse location
     if not location.strip():
