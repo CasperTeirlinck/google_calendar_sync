@@ -2,7 +2,7 @@ from typing import Type, Union
 import datetime
 import pendulum as dt
 
-from models.event import CalendarEvent
+from src.models.event import CalendarEvent
 
 
 def is_older_than(event: Type[CalendarEvent], cutoff_days: int = 5) -> bool:

@@ -9,11 +9,11 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from models.database import Database
-from models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEvent
-from models.ical import ICalendar
-from transformations.event_title import format_event_title
-from transformations.google_to_calendar_event import (
+from src.models.database import Database
+from src.models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEvent
+from src.models.ical import ICalendar
+from src.transformations.event_title import format_event_title
+from src.transformations.google_to_calendar_event import (
     google_to_notion_calendar_event,
     google_to_ical_calendar_event,
 )

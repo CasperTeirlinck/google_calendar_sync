@@ -6,12 +6,12 @@ import yaml
 import argparse
 from typing import Optional
 
-from models.config import Config
-from api_client.google import GCalendar
-from api_client.ical import ICal
-from api_client.notion import Notion
-from jobs.sync_ical import sync_icalendar
-from jobs.sync_notion import sync_database
+from src.models.config import Config
+from src.api_client.google import GCalendar
+from src.api_client.ical import ICal
+from src.api_client.notion import Notion
+from src.jobs.sync_ical import sync_icalendar
+from src.jobs.sync_notion import sync_database
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)-8s %(message)s", level=logging.INFO

@@ -1,4 +1,4 @@
-from models.event import NotionCalendarEvent
+from src.models.event import NotionCalendarEvent
 
 
 def format_event_title(event: NotionCalendarEvent) -> str:

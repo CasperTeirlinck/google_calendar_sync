@@ -4,9 +4,9 @@ import datetime
 import logging
 import icalendar as ical
 
-from common.utils import to_datetime
-from models.event import CalendarEventDate, ICalCalendarEvent
-from models.ical import ICalendar
+from src.common.utils import to_datetime
+from src.models.event import CalendarEventDate, ICalCalendarEvent
+from src.models.ical import ICalendar
 
 logger = logging.getLogger(__name__)
 

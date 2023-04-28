@@ -2,13 +2,13 @@ from typing import Mapping, NamedTuple, Optional
 import pendulum as dt
 import logging
 
-from models.database import Database
-from models.event import (
+from src.models.database import Database
+from src.models.event import (
     CalendarEventDate,
     ICalCalendarEvent,
     NotionCalendarEvent,
 )
-from models.ical import ICalendar
+from src.models.ical import ICalendar
 
 logger = logging.getLogger(__name__)
 

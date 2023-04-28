@@ -1,10 +1,10 @@
 import logging
 
-from api_client.google import GCalendar
-from api_client.notion import Notion
-from common.notion import are_events_equivalent, map_events
-from common.utils import is_older_than
-from models.database import Database
+from src.api_client.google import GCalendar
+from src.api_client.notion import Notion
+from src.common.notion import are_events_equivalent, map_events
+from src.common.utils import is_older_than
+from src.models.database import Database
 
 logger = logging.getLogger(__name__)
 

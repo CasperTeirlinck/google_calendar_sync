@@ -1,8 +1,8 @@
 from typing import Mapping
 import pendulum as dt
 
-from models.database import Database
-from models.event import CalendarEventDate, NotionCalendarEvent
+from src.models.database import Database
+from src.models.event import CalendarEventDate, NotionCalendarEvent
 
 
 def page_to_calendar_event(page: Mapping, database: Database) -> NotionCalendarEvent:

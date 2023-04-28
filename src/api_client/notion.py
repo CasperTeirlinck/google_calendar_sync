@@ -8,9 +8,9 @@ import logging
 from itertools import takewhile
 import json
 
-from models.database import Database, DatabaseName, WorkspaceName
-from models.event import CalendarEvent, NotionCalendarEvent
-from transformations.notion_to_calendar_event import page_to_calendar_event
+from src.models.database import Database, DatabaseName, WorkspaceName
+from src.models.event import CalendarEvent, NotionCalendarEvent
+from src.transformations.notion_to_calendar_event import page_to_calendar_event
 
 logger = logging.getLogger(__name__)
 

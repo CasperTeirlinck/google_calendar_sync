@@ -2,8 +2,8 @@ from dataclasses import dataclass
 import pendulum as dt
 from typing import Literal, Optional
 
-from models.database import Database
-from models.ical import ICalendar
+from src.models.database import Database
+from src.models.ical import ICalendar
 
 DEFAULT_EVENT_DURATION_MIN = 30
 

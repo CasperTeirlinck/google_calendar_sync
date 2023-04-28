@@ -4,11 +4,11 @@ from typing import List
 import icalendar as ical
 import pendulum as dt
 import requests
-from common.utils import to_datetime
+from src.common.utils import to_datetime
 
-from models.event import ICalCalendarEvent
-from models.ical import ICalendar
-from transformations.ical_to_calendar_event import ical_to_calendar_event
+from src.models.event import ICalCalendarEvent
+from src.models.ical import ICalendar
+from src.transformations.ical_to_calendar_event import ical_to_calendar_event
 
 logger = logging.getLogger(__name__)
 

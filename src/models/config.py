@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, List, Mapping
 
-from models.database import Database
-from models.ical import ICalendar
+from src.models.database import Database
+from src.models.ical import ICalendar
 
 
 @dataclass

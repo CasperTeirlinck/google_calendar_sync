@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from models.event import ICalCalendarEvent
+from src.models.event import ICalCalendarEvent
 
 
 def get_events_by_ical_uid(

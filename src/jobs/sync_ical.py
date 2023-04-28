@@ -1,11 +1,11 @@
 import copy
 import logging
 
-from models.ical import ICalendar
-from api_client.google import GCalendar
-from api_client.ical import ICal
-from common.utils import is_older_than
-from common.ical import (
+from src.models.ical import ICalendar
+from src.api_client.google import GCalendar
+from src.api_client.ical import ICal
+from src.common.utils import is_older_than
+from src.common.ical import (
     are_events_equivalent,
     get_recurring_exceptions,
     get_recurring_root,

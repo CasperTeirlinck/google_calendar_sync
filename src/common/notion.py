@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from models.event import NotionCalendarEvent
+from src.models.event import NotionCalendarEvent
 
 
 def get_event_by_page_id(
