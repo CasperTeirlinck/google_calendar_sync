@@ -75,11 +75,10 @@ def get_recurring_root(
 
     if not len(events):
         return None
+    elif len(events) == 1:
+        return events[0]
 
-    # Validate
     assert len(set([event.ical_uid for event in events])) == 1
-
-    # Get root event
     events_root = [event for event in events if not event.recurrence_start]
     assert len(events_root) == 1
 
