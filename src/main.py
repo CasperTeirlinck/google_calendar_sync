@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def main(push_url: Optional[str] = None):
     # Config
-    with open(Path(__file__).resolve().parents[1] / "config" / "config.yaml", "r") as f:
+    with open(Path(__file__).parents[1] / "config" / "config.yaml", "r") as f:
         config = Config.from_dict(yaml.safe_load(f))
 
     # API clients

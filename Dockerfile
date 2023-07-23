@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 # Install module
 COPY . .
-RUN pip install --no-cache-dir --no-deps .
+RUN python -m pip install -e . --no-cache-dir --no-deps
 
 # Generate crontab task
 RUN echo '#!/bin/sh' > /docker-entrypoint.sh

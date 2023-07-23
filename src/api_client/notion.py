@@ -1,12 +1,13 @@
+import json
+import logging
+import urllib.parse
+from functools import partial
+from itertools import takewhile
 from pathlib import Path
 from typing import Any, Iterator, List, Mapping, Optional
-import urllib.parse
-import requests
-from functools import partial
+
 import pendulum as dt
-import logging
-from itertools import takewhile
-import json
+import requests
 
 from src.models.database import Database, DatabaseName, WorkspaceName
 from src.models.event import CalendarEvent, NotionCalendarEvent
@@ -16,9 +17,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
-CREDENTIALS_PATH = (
-    Path(__file__).resolve().parents[2] / "config" / "secrets" / "notion.json"
-)
+CREDENTIALS_PATH = Path(__file__).parents[2] / "config" / "secrets" / "notion.json"
 
 
 class Notion:
