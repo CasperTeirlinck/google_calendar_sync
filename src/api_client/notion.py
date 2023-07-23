@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
-CREDENTIALS_PATH = Path(__file__).parents[2] / "config" / "secrets" / "notion.json"
+CREDENTIALS_PATH = (
+    Path(__file__).resolve().parents[2] / "config" / "secrets" / "notion.json"
+)
 
 
 class Notion:

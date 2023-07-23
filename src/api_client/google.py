@@ -22,7 +22,9 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar",
     # "https://www.googleapis.com/auth/tasks",
 ]
-CREDENTIALS_PATH = Path(__file__).parents[2] / "config" / "secrets" / "google.json"
+CREDENTIALS_PATH = (
+    Path(__file__).resolve().parents[2] / "config" / "secrets" / "google.json"
+)
 
 
 class GCalendar:
