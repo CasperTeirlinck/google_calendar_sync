@@ -1,12 +1,10 @@
+import logging
 from functools import partial
 from pathlib import Path
-import pendulum as dt
-import logging
 from typing import Any, List, Mapping, Type
-from google.auth.transport.requests import Request
-from google.auth.exceptions import RefreshError
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+
+import pendulum as dt
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 from src.models.database import Database
@@ -14,33 +12,29 @@ from src.models.event import CalendarEvent, ICalCalendarEvent, NotionCalendarEve
 from src.models.ical import ICalendar
 from src.transformations.event_title import format_event_title
 from src.transformations.google_to_calendar_event import (
-    google_to_notion_calendar_event,
     google_to_ical_calendar_event,
+    google_to_notion_calendar_event,
 )
 
 logger = logging.getLogger(__name__)
 
-# When modifying scopes, delete the file token.json.
 SCOPES = [
     "https://www.googleapis.com/auth/calendar",
     # "https://www.googleapis.com/auth/tasks",
 ]
+CREDENTIALS_PATH = Path(__file__).parents[2] / "config" / "secrets" / "google.json"
 
 
 class GCalendar:
     """
     Google Calendar API client.
-
-    Reference: https://developers.google.com/calendar/api/quickstart/python
     """
 
     def __init__(self):
-        # Authentication
-        self.credentials: Credentials | None = None
-        self.calendar = None
-        self.authenticate()
-
-        # Google calendar api service
+        self.credentials = Credentials.from_service_account_file(
+            filename=CREDENTIALS_PATH,
+            scopes=SCOPES,
+        )
         self.calendar = build("calendar", "v3", credentials=self.credentials)
 
     def get_events_notion(
@@ -55,7 +49,6 @@ class GCalendar:
 
         logger.info("Getting all events from Google Calendar.")
 
-        # Create request
         request = self.calendar.events().list(
             calendarId=database.calendar_id,
             sharedExtendedProperty=[
@@ -69,11 +62,8 @@ class GCalendar:
         # TODO: pagination
         # TODO: implement incremental request with nextSyncToken
 
-        # Send request
         response = request.execute().get("items", [])
-
-        # Parse into calendar events
-        events = list(
+        return list(
             filter(
                 lambda _: _ is not None,
                 map(
@@ -82,8 +72,6 @@ class GCalendar:
                 ),
             )
         )
-
-        return events
 
     def get_events_ical(
         self,
@@ -96,7 +84,6 @@ class GCalendar:
 
         logger.info("Getting all events from Google Calendar.")
 
-        # Create request
         request = self.calendar.events().list(
             calendarId=icalendar.calendar_id,
             # NOTE: recurring root events seem to be retrieved regardless of timeMin, that is what we want.
@@ -105,11 +92,8 @@ class GCalendar:
             maxResults=2500,
         )
 
-        # Send request
         response = request.execute().get("items", [])
-
-        # Parse into calendar events
-        events = list(
+        return list(
             filter(
                 lambda _: _ is not None,
                 map(
@@ -118,8 +102,6 @@ class GCalendar:
                 ),
             )
         )
-
-        return events
 
     def get_event_instances_ical(
         self,
@@ -139,11 +121,8 @@ class GCalendar:
             maxResults=2500,
         )
 
-        # Send request
         response = request.execute().get("items", [])
-
-        # Parse into calendar events
-        events = list(
+        return list(
             filter(
                 lambda _: _ is not None,
                 map(
@@ -155,58 +134,48 @@ class GCalendar:
             )
         )
 
-        return events
-
     def create_event_from_notion(self, event: NotionCalendarEvent) -> None:
         """
         Create a new event in Google Calendar.
         """
 
-        # Create request
         request = self.calendar.events().insert(
             calendarId=event.database.calendar_id,
             body=self.event_to_request_body_notion(event),
         )
 
-        # Send request
         request.execute()
-
         logger.info(f"Created event '{event.title}' in Google Calendar.")
 
     def create_event_from_ical(self, event: ICalCalendarEvent) -> str:
         """
         Create a new event in Google Calendar based on the ICal event.
+
+        :return: The Google Calendar event id.
         """
 
-        # Create request
         request = self.calendar.events().insert(
             calendarId=event.icalendar.calendar_id,
             body=self.event_to_request_body_ical(event),
         )
 
-        # Send request
         response = request.execute()
         logger.info(f"Created event '{event.title}' in Google Calendar.")
 
-        event_id: str = response["id"]
-
-        return event_id
+        return response["id"]
 
     def update_event_from_notion(self, event: NotionCalendarEvent) -> None:
         """
         Update the given event in Google Calendar.
         """
 
-        # Create request
         request = self.calendar.events().update(
             calendarId=event.database.calendar_id,
             eventId=event.google_event_id,
             body=self.event_to_request_body_notion(event),
         )
 
-        # Send request
         request.execute()
-
         logger.info(f"Updating event '{event.title}' in Google Calendar.")
 
     def update_event_from_ical(self, event: ICalCalendarEvent) -> None:
@@ -214,16 +183,13 @@ class GCalendar:
         Update the given event in Google Calendar based on the ICal event.
         """
 
-        # Create request
         request = self.calendar.events().update(
             calendarId=event.icalendar.calendar_id,
             eventId=event.google_event_id,
             body=self.event_to_request_body_ical(event),
         )
 
-        # Send request
         request.execute()
-
         logger.info(f"Updating event '{event.title}' in Google Calendar.")
 
     def delete_event_notion(self, event: NotionCalendarEvent) -> None:
@@ -231,15 +197,12 @@ class GCalendar:
         Delete the given event from Google Calendar.
         """
 
-        # Create request
         request = self.calendar.events().delete(
             calendarId=event.database.calendar_id,
             eventId=event.google_event_id,
         )
 
-        # Send request
         request.execute()
-
         logger.info(f"Deleted event '{event.title}' from Google Calendar.")
 
     def delete_event_ical(self, event: ICalCalendarEvent) -> None:
@@ -247,15 +210,12 @@ class GCalendar:
         Delete the given event from Google Calendar.
         """
 
-        # Create request
         request = self.calendar.events().delete(
             calendarId=event.icalendar.calendar_id,
             eventId=event.google_event_id,
         )
 
-        # Send request
         request.execute()
-
         logger.info(f"Deleted event '{event.title}' from Google Calendar.")
 
     def event_to_request_body(self, event: Type[CalendarEvent]) -> Mapping[str, Any]:
@@ -355,48 +315,6 @@ class GCalendar:
                 }
             },
         }
-
-    def authenticate(self):
-        """
-        Use OAuth flow to generate credentials for the Google Calendar API.
-        This will open the browser if new credentials need to be generated.
-
-        BUG: Not working with Brave Browser.
-        """
-
-        secrets_path = Path(__file__).parents[2] / "config" / "secrets"
-        token_path = str(secrets_path / "token.json")
-        credentials_path = str(secrets_path / "credentials.json")
-
-        # Get stored credentials
-        creds = None
-        if Path(secrets_path / "token.json").exists():
-            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-
-        # Get new credentials
-        if not creds or not creds.valid:
-            refreshed = False
-
-            # Refresh credentials
-            if creds and creds.expired and creds.refresh_token:
-                try:
-                    creds.refresh(Request())
-                    refreshed = True
-                except RefreshError:
-                    pass
-
-            # Recreate credentials
-            if not refreshed:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credentials_path, SCOPES
-                )
-                creds = flow.run_local_server(port=3000)
-
-            # Write new credentials to file
-            with open(token_path, "w") as token:
-                token.write(creds.to_json())
-
-        self.credentials = creds
 
     def __del__(self):
         if self.calendar:

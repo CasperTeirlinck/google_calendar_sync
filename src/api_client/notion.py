@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
+CREDENTIALS_PATH = Path(__file__).parents[2] / "config" / "secrets" / "notion.json"
 
 
 class Notion:
@@ -27,27 +28,30 @@ class Notion:
     """
 
     def __init__(self):
-        # Config
         self.base_url = BASE_URL.rstrip("/")
-
-        # Authentication: integration token per workspace
-        with open(
-            Path(__file__).parents[2] / "config" / "secrets" / "notion.json", "r"
-        ) as f:
-            secrets = json.load(f)
         self.version = NOTION_VERSION
-        self.tokens: Mapping[WorkspaceName, str] = secrets["integration_tokens"]
+
+        self.auth_headers: Mapping[WorkspaceName, Mapping[str, str]]
+        self.init_integration_tokens_per_workspace()
+
+        self.database_objects: Mapping[DatabaseName, Mapping] = {}
+
+    def init_integration_tokens_per_workspace(self):
+        """
+        Read and store integration tokens per workspace.
+        """
+
+        with open(CREDENTIALS_PATH, "r") as f:
+            secrets = json.load(f)
+        tokens: Mapping[WorkspaceName, str] = secrets["integration_tokens"]
         self.auth_headers: Mapping[WorkspaceName, Mapping[str, str]] = {
             workspace: {
                 "Authorization": f"Bearer {token}",
                 "Notion-Version": self.version,
                 "accept": "application/json",
             }
-            for workspace, token in self.tokens.items()
+            for workspace, token in tokens.items()
         }
-
-        # Cached notion database objects
-        self.database_objects: Mapping[DatabaseName, Mapping] = {}
 
     def get(self, path: str, database: Database) -> Mapping:
         """
@@ -124,7 +128,6 @@ class Notion:
 
         response = self.post(path, body, database, query)
 
-        # Pagination
         next_cursor = response.get("next_cursor")
         if next_cursor:
             logger.info(f"Performing recursive paginated request")
@@ -137,11 +140,9 @@ class Notion:
         Get database object and cache it.
         """
 
-        # Return from cache
         if database.name in self.database_objects.keys() and not ignore_cache:
             return self.database_objects[database.name]
 
-        # Send new request
         response = self.get(f"databases/{database.id}", database)
         self.database_objects[database.name] = response
 
@@ -159,7 +160,6 @@ class Notion:
 
         logger.info("Getting all pages from Notion.")
 
-        # Get database property ids
         database_object = self.get_database(database)
         property_ids = []
         for property in [
@@ -171,7 +171,6 @@ class Notion:
                 urllib.parse.unquote(database_object["properties"][property]["id"])
             )
 
-        # Create request
         body = {
             "filter": {
                 "property": database.date_property,
@@ -181,7 +180,6 @@ class Notion:
         }
         query = {"filter_properties": property_ids}
 
-        # Send request
         response = self.post_paginated(
             f"databases/{database.id}/query",
             body,
@@ -189,10 +187,8 @@ class Notion:
             query,
         )
 
-        # Parse pages into calendar events
         events = map(partial(page_to_calendar_event, database=database), response)
 
-        # Limit results based on date
         def _date_cutoff(event: CalendarEvent):
             return event.date.start >= dt.now().subtract(days=cutoff_days)
 

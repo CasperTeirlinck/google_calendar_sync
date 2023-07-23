@@ -1,11 +1,12 @@
-from functools import partial
 import logging
+from functools import partial
 from typing import List
+
 import icalendar as ical
 import pendulum as dt
 import requests
-from src.common.utils import to_datetime
 
+from src.common.utils import to_datetime
 from src.models.event import ICalCalendarEvent
 from src.models.ical import ICalendar
 from src.transformations.ical_to_calendar_event import ical_to_calendar_event

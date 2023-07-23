@@ -20,12 +20,11 @@
 
 ## Google API
 
-> OAuth for google doesn't seem to work in Brave browser, use Google Chrome instead.
+Google OAuth 2.0 requires you to designate your project as either "Testing" or "Published." OAuth 2.0 tokens issued for "Testing" projects are only valid for one week, after which the user must complete the OAuth consent process again. Hence, using the credentials of the user will not work for automation. Instead, a service account can be used with the user's calendars shared with the service account.
 
-1. [Create the credentials](https://developers.google.com/calendar/api/quickstart/python.)
-   - First, make sure the google calendar and google tasks api's form the api library are enabled
-   - Scopes: "/auth/calendar", "/auth/tasks"
-2. Store `credentials.json` in `secrets/credentials.json`.
+1. Create a [Service Account](https://developers.google.com/identity/protocols/oauth2/service-account). Project permissions or IAM roles are irrelevant.
+2. Generate a key for the service account (type JSON) and store it in `secrets/google.json`
+3. In your Google Calendar UI, share every relevant calendar with the email of the service account, permission should be "Make changes to events".
 
 ## Notion API
 
