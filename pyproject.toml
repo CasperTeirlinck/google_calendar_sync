@@ -16,6 +16,8 @@ python-dotenv = "^1.0.0"
 pyyaml = "^6.0"
 icalendar = "^5.0.4"
 pendulum = "^2.1.2"
+# dagster = "^1.3.6"
+# dagit = "^1.3.6"
 
 [tool.poetry.group.dev.dependencies]
 google-api-python-client-stubs = "^1.16.0"
@@ -24,3 +26,6 @@ black = "^23.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# [tool.dagster]
+# module_name = "src"

@@ -73,6 +73,9 @@ def parse_event(event: Mapping) -> EventData:
     if tz_end:
         date.end = date.end.set(tz=tz_end)
 
+    if title == "RND FAB ICT Data Forum":
+        breakpoint()
+
     return EventData(id=id, title=title, location=location, date=date)
 
 

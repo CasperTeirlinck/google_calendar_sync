@@ -34,6 +34,11 @@ class CalendarEvent:
     recurrence_id: Optional[str] = None
     google_event_id: str = ""
 
+    def __post_init__(self):
+        if self.title.strip() == "":
+            # Google automatically renames events with no name to "Untitled"
+            self.title = "Untitled"
+
 
 @dataclass(kw_only=True)
 class NotionCalendarEvent(CalendarEvent):
